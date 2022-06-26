@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            background: black;
+        }
+        
+        #canvas1 {
+            width: 1280px;
+            height: 720px;
+            border: 1px white solid;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        
+        .in-div {
+            border: none;
+            border-radius: 50px;
+            position: absolute;
+            bottom: 0;
+            left: 92%;
+            width: 100px;
+            height: 60px;
+            transform: rotate(90deg) translate(-50%, -50%);
+            background: transparent;
+            font: 12pt white bolder;
+        }
+        
+        .modeTextClass {
+            font: 12pt white bolder;
+            color: white;
+            top: 0%;
+            left: 0%;
+            user-select: none;
+        }
+        
+        #resetButtonDiv {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100px;
+            height: 50px;
+        }
+        
+        #resetButton {
+            position: inherit;
+            background-color: red;
+            width: inherit;
+            height: inherit;
+            font: large bolder white;
+            color: white;
+            border-radius: 20px;
+            border-color: transparent;
+            border-width: 0px;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        #selectorText {
+            color: white;
+            position: absolute;
+            bottom: 13%;
+            right: 5px;
+            width: 100px;
+            height: 60px;
+            background: transparent;
+            margin-right: 0px;
+            user-select: none;
+        }
+    </style>
+    <title>Particle Rain</title>
+</head>
+
+<body>
+    <span class="modeTextClass">Mode:</span>
+    <span class="modeTextClass" id="modeValue"></span><br>
+    <span class="modeTextClass" id="modeText"></span><br>
+    <canvas id="canvas1"></canvas>
+    <span id="selectorText">Mode Selector <br><br>Particle number Selector</span>
+    <div class="in-div">
+        <input type="range" min="1" max="10" step="1" name="Mode" id="ModeSelector">
+        <input type="range" min="1000" max="20000" step="1000" name="Mode" id="NumberSelector">
+    </div>
+    <div id="resetButtonDiv">
+        <button id="resetButton">Reset</button>
+    </div>
+    <script>
+        const ModeSelector = document.getElementById("ModeSelector");
+        const modeValue = document.getElementById("modeValue");
+        const modeText = document.getElementById("modeText");
+        const resetButton = document.getElementById("resetButton");
+        let mode = modev;
+        /*
+        mode=1:linear down
+        mode=2:linear up
+        mode=3:linear right
+        mode=4:linear left
+        mode=5:radial in
+        mode=6:radial out
+        mode=7:Spiral right
+        mode=8:Spiral left
+        */
+        const modeList = [
+            "Linear down",
+            "Linear up",
+            "Linear right",
+            "Linear left",
+            "Radial in",
+            "Radial out",
+            "Spiral right in ",
+            "Spiral left in",
+            "Spiral right out",
+            "Sprial left out"
+        ];
+        ModeSelector.value = mode.toString();
+        modeValue.innerText = mode.toString();
+        modeText.innerText = modeList[mode - 1];
+        ParticleNumberValue.innerText;
+        ModeSelector.addEventListener("input", () => {
+            mode = parseInt(ModeSelector.value);
+            modeValue.innerHTML = mode.toString();
+            modeText.innerText = modeList[mode - 1];
+            console.log(ModeSelector);
+            console.log(ModeSelector.value);
+            console.log(mode);
+        });
+        const canvas = document.getElementById("canvas1");
+        const ctx = canvas.getContext("2d");
+        canvas.height = 720 * ScalingFactor;
+        canvas.width = 1280 * ScalingFactor;
+        const ch = canvas.height;
+        const cw = canvas.width;
+        ctx.fillStyle = "black";
+        ctx.fillRect(0, 0, cw, ch);
+        let brightnessMinumum = 0;
+        let brightnessMaximum = 0;
+        let particlesArray = [];
+        /*
+        5000: low end computers
+        10000: mid range computers
+        15000: medium-high end computers
+        20000: high end computers.
+        */
+        let numberOfParticles = 10000;
+
+        function map(input, input_start, input_end, output_start, output_end) {
+            return output_start + ((output_end - output_start) / (input_end - input_start)) * (input - input_start)
+        }
+
+        function distance(x1, y1, x2, y2) {
+            return Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
+        }
+        class Particle {
+            constructor() {
+                this.x = Math.random() * cw;
+                this.y = Math.random() * ch;
+                this.speed = 0;
+                this.color = "";
+                this.size = Math.random() * 2 + 2;
+                this.positiony = Math.floor(this.y);
+                this.positionx = Math.floor(this.x);
+            }
+            shuffle() {
+                this.x = Math.random() * cw;
+                this.y = Math.random() * ch;
+            }
+            update() {
+                this.positiony = Math.floor(this.y);
+                this.positionx = Math.floor(this.x);
+                this.dist = distance(this.x, this.y, cw / 2, ch / 2);
+                this.speed = map(mappedImage[this.positiony][this.positionx][0],
+                    brightnessMinumum,
+                    brightnessMaximum, 3, 0.025);
+                switch (mode) {
+                    case 1:
+                        this.y += this.speed;
+                        if (this.y > ch) {
+                            this.shuffle();
+                        }
+                        break;
+                    case 2:
+                        this.y -= this.speed;
+                        if (this.y <= 0) {
+                            this.shuffle()
+                        }
+                        break;
+                    case 3:
+                        this.x += this.speed;
+                        if (this.y > cw) {
+                            this.shuffle();
+                        }
+                        break;
+                    case 4:
+                        this.x -= this.speed;
+                        if (this.x <= 0) {
+                            this.shuffle();
+                        }
+                        break;
+                    case 5:
+                        this.angle = Math.atan2(this.y - ch / 2, this.x - cw / 2);
+                        this.x = this.x - Math.cos(this.angle) * this.speed;
+                        this.y = this.y - Math.sin(this.angle) * this.speed;
+                        if ((Math.round(this.x) == Math.round(cw / 2)) &&
+                            (Math.round(this.y) == Math.round(ch / 2))) {
+                            this.shuffle();
+                        }
+                        break;
+                    case 6:
+                        this.angle = Math.atan2(this.y - ch / 2, this.x - cw / 2);
+                        this.x = this.x + Math.cos(this.angle) * this.speed;
+                        this.y = this.y + Math.sin(this.angle) * this.speed;
+                        if ((this.x >= cw) || (this.x <= 0) || (this.y >= ch) || (this.y <= 0)) {
+                            this.x = map(Math.random(), 0, 1, (cw / 2) - 10, (cw / 2) + 10);
+                            this.y = map(Math.random(), 0, 1, (ch / 2) - 10, (ch / 2) + 10);
+                        }
+                        break;
+                    case 7:
+                        this.angle = Math.atan2(this.y - ch / 2, this.x - cw / 2);
+                        this.x = this.x - Math.cos(this.angle - (Math.PI / 3)) * this.speed;
+                        this.y = this.y - Math.sin(this.angle - (Math.PI / 3)) * this.speed;
+                        if ((Math.round(this.x) == Math.round(cw / 2)) &&
+                            (Math.round(this.y) == Math.round(ch / 2))) {
+                            this.shuffle();
+                        }
+                        break;
+                    case 8:
+                        this.angle = Math.atan2(this.y - ch / 2, this.x - cw / 2);
+                        this.x = this.x - Math.cos(this.angle + (Math.PI / 3)) * this.speed;
+                        this.y = this.y - Math.sin(this.angle + (Math.PI / 3)) * this.speed;
+                        if ((Math.round(this.x) == Math.round(cw / 2)) &&
+                            (Math.round(this.y) == Math.round(ch / 2))) {
+                            this.shuffle();
+                        }
+                        break;
+                    case 9:
+                        this.angle = Math.atan2(this.y - ch / 2, this.x - cw / 2);
+                        this.x = this.x + Math.cos(this.angle - (Math.PI / 3)) * this.speed;
+                        this.y = this.y + Math.sin(this.angle - (Math.PI / 3)) * this.speed;
+                        if ((Math.round(this.x) == Math.round(cw / 2)) &&
+                            (Math.round(this.y) == Math.round(ch / 2))) {
+                            this.shuffle();
+                        }
+                        break;
+                    case 10:
+                        this.angle = Math.atan2(this.y - ch / 2, this.x - cw / 2);
+                        this.x = this.x + Math.cos(this.angle + (Math.PI / 3)) * this.speed;
+                        this.y = this.y + Math.sin(this.angle + (Math.PI / 3)) * this.speed;
+                        if ((Math.round(this.x) == Math.round(cw / 2)) &&
+                            (Math.round(this.y) == Math.round(ch / 2))) {
+                            this.shuffle();
+                        }
+                        break;
+                    default:
+                        break;
+                }
+                if ((this.y >= ch || this.y < 1) || (this.x >= cw || this.x < 1)) {
+                    this.y = Math.random() * ch;
+                    this.x = Math.random() * cw;
+                }
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.fillStyle = this.color;
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function clearScreen() {
+            ctx.fillStyle = "black";
+            ctx.fillRect(0, 0, cw, ch);
+        }
+
+        function init() {
+            for (let i = 0; i < numberOfParticles; i++) {
+                particlesArray.push(new Particle())
+            }
+        }
+        init()
+        resetButton.addEventListener("click", () => {
+            particlesArray.forEach((value) => {
+                value.shuffle();
+            })
+            clearScreen();
+        })
+        ParticleNumberSelector.addEventListener("change", () => {
+            numberOfParticles = ParticleNumberSelector.value;
+            ParticleNumberValue.innerText = numberOfParticles;
+            for (let i = 0; i < particlesArray.length; i++) {
+                particlesArray.pop();
+            }
+            for (let i = 0; i < numberOfParticles; i++) {
+                particlesArray.push(new Particle());
+            }
+            clearScreen();
+        })
+
+        function animate() {
+
+            clearScreen();
+            for (let index = 0; index < particlesArray.length; index++) {
+                particlesArray[index].update();
+                particlesArray[index].draw();
+
+            }
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+</body>
+
+</html>
+
+</html>
